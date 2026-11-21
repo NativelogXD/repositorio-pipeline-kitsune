@@ -2,7 +2,7 @@
 
 **Proyecto bajo estudio:** Kitsune-py (Online Network Intrusion Detection System basado en un Ensamble de Autoencoders, NDSS 2018)  
 **Repositorio de referencia:** https://github.com/ymirsky/Kitsune-py  
-**Repositorio local intervenido:** `C:\Users\xiao\Documents\universidad\ing softwqqare 3\repo-kitsune`  
+**Repositorio del proyecto:** https://github.com/NativelogXD/repositorio-pipeline-kitsune (`repositorio-pipeline-kitsune`)  
 **Asignatura:** Ingeniería de Software III  
 **Estándares aplicados:** IEEE 829 / ISO/IEC/IEEE 29119 (Documentación de Pruebas de Software)  
 **Alcance de ejecución activa:** Funcional y verificado hasta la etapa de Pruebas Unitarias (15 casos unitarios consolidados aprobados, 95.19% de cobertura de código), con etapa de Pruebas de Despliegue documentada y simulada en el pipeline.
@@ -181,7 +181,7 @@ Aunque el pipeline activo se detiene en las pruebas unitarias, el Plan Maestro i
 
 ## 3. Planes Específicos de Pruebas Unitarias por Módulo (PU-01 a PU-08)
 
-A continuación se documenta de forma individual y exhaustiva cada uno de los **8 Planes de Pruebas Unitarias** implementados en el directorio `tests/unit/`.
+A continuación se documenta de forma individual y exhaustiva cada uno de los **8 Planes de Pruebas Unitarias** implementados en el directorio `tests/unit/`, consolidados en **15 pruebas unitarias deterministas**.
 
 ### 3.1. Plan de Pruebas Unitarias PU-01: Módulo `KitNET/utils.py`
 
@@ -194,15 +194,8 @@ A continuación se documenta de forma individual y exhaustiva cada uno de los **
 
 | ID Caso | Función / Método | Entrada de Prueba | Resultado Esperado / Criterio de Aceptación | Estado |
 | :--- | :--- | :--- | :--- | :--- |
-| **UT-UTILS-001** | `pdf(x, mu, sigma)` | `x=0.0, mu=0.0, sigma=1.0` | Retorna $1/\sqrt{2\pi} \approx 0.39894228$ con error relativo $< 10^{-7}$. | APROBADO |
-| **UT-UTILS-002** | `pdf(x, mu, sigma)` | `mu=5.0, sigma=2.0`, desplazamientos simétricos $\pm[0.5, 1.0, 2.5, 4.0]$ | Cumple simetría par exacta: `pdf(mu - d) == pdf(mu + d)`. | APROBADO |
-| **UT-UTILS-003** | `invLogCDF(x, mu, sigma)` | `x=[0, 1, 2, 3], mu=1.0, sigma=0.5` | Coincide exactamente con `scipy.stats.norm.logcdf(-(x - mu)/sigma)`. | APROBADO |
-| **UT-UTILS-004** | `sigmoid(x)` | `x=[-10.0, -1.0, 0.0, 1.0, 10.0]` | `sigmoid(0) == 0.5`, imagen estricta en $(0, 1)$ y monotonía creciente. | APROBADO |
-| **UT-UTILS-005** | `dsigmoid(y)` | `y=[0.1, 0.25, 0.5, 0.75, 0.9]` | Satisface la identidad `y * (1 - y)` y alcanza máximo `0.25` en `y=0.5`. | APROBADO |
-| **UT-UTILS-006** | `tanh(x)` y `dtanh(y)` | `x=[-2.0, -0.5, 0.0, 0.5, 2.0]` | Imparidad `tanh(-x) == -tanh(x)` y derivada `dtanh(y) == 1 - y^2`. | APROBADO |
-| **UT-UTILS-007** | `softmax(x)` | Vector 1D `[1, 2, 3]`, desplazado `+1000` y matriz 2D `(2, 3)` | Las probabilidades suman `1.0` por fila y son invariantes a traslación sin desbordamiento. | APROBADO |
-| **UT-UTILS-008** | `ReLU(x)` y `dReLU(x)` | `x=[-5.0, -0.01, 0.0, 0.01, 5.0]` | Retorna `[0, 0, 0, 0.01, 5.0]` y subgradiente escalón `[0, 0, 0, 1, 1]`. | APROBADO |
-| **UT-UTILS-009** | `rollmean(k=3).apply()` | Inserción secuencial `3.0, 6.0, 9.0, 12.0` | Medias sucesivas `1.0, 3.0, 6.0, 9.0` y rotación circular del puntero `0 -> 1 -> 2 -> 0 -> 1`. | APROBADO |
+| **UT-UTILS-001** | `pdf()`, `invLogCDF()`, `rollmean(k=3)` | `pdf(0,0,1)`, simetría vectorizada en $\mu=5, \sigma=2$, `invLogCDF([0..3], 1, 0.5)` y secuencia `3, 6, 9, 12` en `rollmean(3)`. | Retorna $\frac{1}{\sqrt{2\pi}}$, simetría exacta, coincidencia con `scipy.stats.norm.logcdf(-z)` y medias `1.0, 3.0, 6.0, 9.0` con rotación circular del puntero `0 -> 1 -> 2 -> 0 -> 1`. | APROBADO |
+| **UT-UTILS-002** | `sigmoid`, `dsigmoid`, `tanh`, `dtanh`, `softmax`, `ReLU`, `dReLU` | Vectores 1D y matriz 2D `(2, 3)` incluyendo desplazamiento `+1000` en `softmax`. | Cotas `(0, 1)`, identidad $y(1-y)$, imparidad de `tanh`, suma `1.0` por fila invariante al desplazamiento en `softmax` y subgradiente escalón de `ReLU`. | APROBADO |
 
 ---
 
@@ -217,12 +210,8 @@ A continuación se documenta de forma individual y exhaustiva cada uno de los **
 
 | ID Caso | Función / Método | Entrada de Prueba | Resultado Esperado / Criterio de Aceptación | Estado |
 | :--- | :--- | :--- | :--- | :--- |
-| **UT-DA-001** | `dA.__init__(params)` | `n_visible=10, hiddenRatio=0.75` | `n_hidden == ceil(10 * 0.75) == 8`, `W.shape == (10, 8)`, pesos atados `W_prime == W.T` y cotas en `[-0.1, 0.1]`. | APROBADO |
-| **UT-DA-002** | `dA.__init__(params)` | Dos instancias independientes con `n_visible=6, hiddenRatio=0.5` | Matrices `W` idénticas bit a bit confirmando reproducibilidad determinista. | APROBADO |
-| **UT-DA-003** | `dA.train(x)` | Vectores `x1=[10, -5, 0]` y `x2=[2, 8, -3]` | `norm_min` se actualiza a `[2, -5, -3]`, `norm_max` a `[10, 8, 0]`, `n == 2` y RMSE $\ge 0$. | APROBADO |
-| **UT-DA-004** | `get_corrupted_input()` y `train()` | Vector de 20 elementos iguales a `5.0`, `corruption_level=0.3` y `1.0` | Con `0.3` aplica máscara binomial en `{0.0, 5.0}` y entrena correctamente; con `1.0` lanza `AssertionError`. | APROBADO |
-| **UT-DA-005** | `execute(x)` e `inGrace()` | `gracePeriod=3`; evaluación antes y después de 3 llamadas a `train()` | Mientras `n < 3`, `inGrace() == True` y `execute(x) == 0.0`; al llegar a `n == 3`, `inGrace() == False` y `execute(x) > 0.0`. | APROBADO |
-| **UT-DA-006** | `train(x)` y `execute(x)` | 150 iteraciones sobre distribución estacionaria en $\mathbb{R}^5$ y prueba con vector anómalo | El error RMSE converge ($\text{RMSE}_{\text{final}} < \text{RMSE}_{\text{inicial}}$) y discrimina anomalías ($\text{RMSE}_{\text{anomalía}} > \text{RMSE}_{\text{normal}}$). | APROBADO |
+| **UT-DA-001** | `dA.__init__()`, `get_corrupted_input()`, `train()` | `n_visible=10, hiddenRatio=0.75`, dos instancias `n_visible=6` y máscara con `corruption_level=0.3` y `1.0`. | `n_hidden == 8`, pesos atados `W_prime == W.T`, determinismo por semilla `1234`, máscara en `{0.0, 5.0}` y `AssertionError` con `1.0`. | APROBADO |
+| **UT-DA-002** | `dA.train(x)`, `execute(x)`, `inGrace()` | Seguimiento min-max (`x1, x2`), compuerta `gracePeriod=3` y 150 iteraciones SGD en $\mathbb{R}^5$ vs patrón anómalo. | `norm_min`/`norm_max` exactos, `execute() == 0.0` durante gracia, $\text{RMSE}_{\text{final}} < \text{RMSE}_{\text{inicial}}$ y $\text{RMSE}_{\text{anomalía}} > \text{RMSE}_{\text{normal}}$. | APROBADO |
 
 ---
 
@@ -237,11 +226,8 @@ A continuación se documenta de forma individual y exhaustiva cada uno de los **
 
 | ID Caso | Función / Método | Entrada de Prueba | Resultado Esperado / Criterio de Aceptación | Estado |
 | :--- | :--- | :--- | :--- | :--- |
-| **UT-CC-001** | `corClust.__init__(n=8)` | `n=8` | Vectores `c, c_r, c_rs` de forma `(8,)`, matriz `C` de `(8, 8)` inicializada en ceros y `N == 0`. | APROBADO |
-| **UT-CC-002** | `corClust.update(x)` | `x1=[1, 2, 3]` y `x2=[2, 4, 6]` | En `N=1`, residuo `c_rt == 0`; en `N=2`, diagonal de `C > 0` y simetría exacta `C == C.T`. | APROBADO |
-| **UT-CC-003** | `corClust.corrDist()` | 10 vectores en $\mathbb{R}^4$ con 2 dimensiones constantes (`0.0` y `5.0`) | Sustituye denominadores nulos por `1e-100`, trunca negativos `D[D < 0] = 0` y retorna matriz libre de `NaN`/`Inf`. | APROBADO |
-| **UT-CC-004** | `corClust.cluster(maxClust)` | 40 observaciones en $\mathbb{R}^{15}$ con `maxClust=4` | Todos los subgrupos cumplen $1 \le |v_i| \le 4$ y su unión disjunta contiene exactamente los índices `0..14`. | APROBADO |
-| **UT-CC-005** | `corClust.cluster()` | `n=6` evaluado en extremos `maxClust=0` y `maxClust=100` | Con `maxClust=0` ajusta a `1` (6 clústeres unitarios); con `maxClust=100` ajusta a `6` (1 único clúster). | APROBADO |
+| **UT-CC-001** | `corClust.__init__()`, `update()`, `corrDist()` | `n=8` inicial, vectores colineales en $\mathbb{R}^3$ y 10 vectores en $\mathbb{R}^4$ con 2 features constantes. | Estructuras en cero, simetría $C == C^\top$, sustitución `1e-100` ante varianza nula, recorte `D[D < 0] = 0` y ausencia de `NaN`/`Inf`. | APROBADO |
+| **UT-CC-002** | `corClust.cluster(maxClust)` | 40 muestras gaussianas en $\mathbb{R}^{15}$ (`maxClust=4`) y fronteras `maxClust=0` y `100` en $\mathbb{R}^6$. | Partición disjunta completa con $1 \le |v_i| \le 4$; clamping a 6 singletons (`0`) y 1 clúster único (`100`). | APROBADO |
 
 ---
 
@@ -256,10 +242,8 @@ A continuación se documenta de forma individual y exhaustiva cada uno de los **
 
 | ID Caso | Función / Método | Entrada de Prueba | Resultado Esperado / Criterio de Aceptación | Estado |
 | :--- | :--- | :--- | :--- | :--- |
-| **UT-KN-001** | `KitNET.__init__()` | `n=10, max_autoencoder_size=0, FM_grace_period=None, AD_grace_period=500` | `FM_grace_period` hereda `500`, `m` se corrige a `1` y `v` inicia en `None`. | APROBADO |
-| **UT-KN-002** | `KitNET.execute(x)` | Llamada directa a `execute(x)` con `v=None` | Lanza `RuntimeError` indicando que el mapeo de características no ha sido aprendido ni provisto. | APROBADO |
-| **UT-KN-003** | `KitNET.__init__(feature_map=...)` | Mapeo manual `[[0,1,2],[3,4],[5]]`, `FM_grace=0, AD_grace=5` | Omite fase FM, construye 3 autoencoders en `ensembleLayer` y 1 en `outputLayer`, entrena 6 pasos (`0.0`) y ejecuta en el 7º (`RMSE > 0`). | APROBADO |
-| **UT-KN-004** | `KitNET.process(x)` | Ciclo completo con `n=12, m=4, FM_grace=10, AD_grace=15` | Recorre 11 pasos en fase FM (creando el mapeo `v` en el paso 11), 15 pasos en fase AD (`0.0`) y retorna `RMSE > 0` desde el paso 27. | APROBADO |
+| **UT-KN-001** | `KitNET.__init__()`, `execute()`, `process()` | `m=0, FM_grace=None`, `execute()` sin mapeo y `feature_map=[[0,1,2],[3,4],[5]]` (`FM_grace=0, AD_grace=5`). | Herencia `FM_grace=500`, `m=1`, `RuntimeError` sin mapeo y ejecución con 3 autoencoders tras 6 pasos de entrenamiento. | APROBADO |
+| **UT-KN-002** | `KitNET.process(x)` (Ciclo completo) | `n=12, m=4, FM_grace=10, AD_grace=15` | Recorre exactamente 11 pasos en fase FM (instanciando `v`), 15 pasos en fase AD (`0.0`) y retorna `RMSE > 0` desde el paso 27. | APROBADO |
 
 ---
 
@@ -274,14 +258,8 @@ A continuación se documenta de forma individual y exhaustiva cada uno de los **
 
 | ID Caso | Función / Método | Entrada de Prueba | Resultado Esperado / Criterio de Aceptación | Estado |
 | :--- | :--- | :--- | :--- | :--- |
-| **UT-AI-001** | `incStat.insert()`, `processDecay()`, `mean()`, `var()`, `std()` | `Lambda=1.0`, inserciones `(10.0, t=0.0)` y `(20.0, t=1.0)` | En $t=1$, factor $\gamma = 0.5$, peso $w = 1.5$, suma $CF_1 = 25.0$, media $\mu = 16.6667$ y $\sigma = \sqrt{\text{var}}$. | APROBADO |
-| **UT-AI-002** | `incStat.insert()` (`isTypeDiff=True`) | `init_time=10.0`, inserciones en `t=10.0` y `t=12.0` | Reemplaza el valor nominal por $\Delta t = 0.0$ en $t=10.0$ y $\Delta t = 2.0$ en $t=12.0$. | APROBADO |
-| **UT-AI-003** | `incStat.magnitude()` y `radius()` | Dos flujos con valores iniciales `3.0` y `4.0` en `t=0.0` | Magnitud euclidiana $\sqrt{3^2 + 4^2} = 5.0$ y radio `0.0`. | APROBADO |
-| **UT-AI-004** | `getHeaders_1D()` y `getHeaders_2D()` | `ID="host1"`, `ID2="host2"`, con y sin sufijo | Genera exactamente 3 encabezados 1D y 7 encabezados combinados 1D+2D. | APROBADO |
-| **UT-AI-005** | `incStat_cov` y delegadores en `incStat` | 7 inserciones acopladas entre flujos `A` y `B` | Calcula `cov()`, `pcc()`, `get_stats1..4` (longitudes `2, 4, 8, 10`), `allstats_2D` (7 dims) y retorna `NaN` para IDs no vinculados. | APROBADO |
-| **UT-AI-006** | `incStatDB.register()` | `limit=2`, registro de 3 claves distintas | Permite re-registro de claves existentes y lanza `LookupError` al superar `limit=2`. | APROBADO |
-| **UT-AI-007** | `incStatDB.get_1D/2D_Stats()` | Consultas sobre flujos inexistentes | Retorna `[np.nan]*3`, `[np.nan]*2` y `([], [])` sin errores de atributo. | APROBADO |
-| **UT-AI-008** | `update_get_1D2D_Stats()` y `cleanOutOldRecords()` | 2 flujos registrados en `t=1.0` y poda en `t=20.0` con `cutoffWeight=0.01` | Retorna vector 7D válido, resuelve consultas 1D/2D/nD de flujos activos y elimina los 2 registros decaídos (`len(HT) == 0`). | APROBADO |
+| **UT-AI-001** | `incStat`, `incStat_cov` | `Lambda=1.0`, `isTypeDiff=True`, magnitud `(3, 4)`, encabezados 1D/2D y 7 actualizaciones acopladas `A`/`B`. | Factor $\gamma=0.5$, peso $w=1.5$, jitter $\Delta t=2.0$, magnitud `5.0`, `get_stats1..4` sin `NaN` y encabezados `ver=1..5`. | APROBADO |
+| **UT-AI-002** | `incStatDB` (`register`, `get_*`, `cleanOutOldRecords`) | `limit=2` con 3 flujos, claves ausentes, flujos 1D/2D/nD y poda en `t=20.0` (`cutoffWeight=0.01`). | Lanza `LookupError` al 3er flujo, retorna `NaN`/`[]` en ausentes, resuelve vector 7D/nD y elimina los 2 registros caducados (`len(HT) == 0`). | APROBADO |
 
 ---
 
@@ -296,10 +274,8 @@ A continuación se documenta de forma individual y exhaustiva cada uno de los **
 
 | ID Caso | Función / Método | Entrada de Prueba | Resultado Esperado / Criterio de Aceptación | Estado |
 | :--- | :--- | :--- | :--- | :--- |
-| **UT-NS-001** | `netStat.__init__()` y `getNetStatHeaders()` | Inicialización por defecto (`Lambdas=np.nan`) y personalizada (`Lambdas=[1.0, 0.1]`) | Genera 100 encabezados para las 5 lambdas por defecto y 40 encabezados para 2 lambdas. | APROBADO |
-| **UT-NS-002** | `netStat.findDirection()` | Direcciones IPv4 (`IPtype=0`), IPv6 (`IPtype=1`) y L2 (`IPtype=np.nan`) | Extrae prefijos `/24` en IPv4 (`192.168.1`), mitad de cadena en IPv6 y direcciones MAC en capa 2. | APROBADO |
-| **UT-NS-003** | `netStat.updateGetStats()` (TCP/UDP) | Tráfico bidireccional entre `192.168.1.10:443` y `192.168.1.20:51234` | Retorna vector `np.ndarray` de dimensión `(100,)` sin valores `NaN` ni `Inf`. | APROBADO |
-| **UT-NS-004** | `netStat.updateGetStats()` (Rama ARP) | Trama con `srcProtocol="arp"` y `dstProtocol="arp"` | Retorna vector `(100,)` finito y registra las claves en `HT_Hp` empleando las direcciones MAC. | APROBADO |
+| **UT-NS-001** | `netStat.__init__()`, `getNetStatHeaders()`, `findDirection()` | `Lambdas` default vs `[1.0, 0.1]`, e IPv4 (`IPtype=0`), IPv6 (`IPtype=1`) y L2 (`IPtype=np.nan`). | Genera 100 (default) y 40 (custom) encabezados; extrae subred `/24` IPv4, mitad IPv6 y direcciones MAC completas en L2. | APROBADO |
+| **UT-NS-002** | `netStat.updateGetStats()` | Tráfico TCP bidireccional y trama ARP (`srcProtocol="arp"`). | Retorna `np.ndarray` de forma `(100,)` finito sin `NaN` e indexa `HT_Hp` mediante `srcMAC` en la rama ARP. | APROBADO |
 
 ---
 
@@ -314,10 +290,8 @@ A continuación se documenta de forma individual y exhaustiva cada uno de los **
 
 | ID Caso | Función / Método | Entrada de Prueba | Resultado Esperado / Criterio de Aceptación | Estado |
 | :--- | :--- | :--- | :--- | :--- |
-| **UT-FE-001** | `FE.__init__()` / `__prep__()` | Ruta inexistente `non_existent.pcap` y archivo inválido `.txt` | Lanza `Exception` impidiendo la creación del objeto `FE`. | APROBADO |
-| **UT-FE-002** | `FE.get_next_vector()` (Modo TSV) | Archivo `.tsv` con 6 paquetes (IPv4/TCP, IPv4/UDP, IPv6/TCP, ARP, ICMP, L2 MAC) | Extrae 6 vectores de dimensión `(100,)` sin `NaN`; en la 7ª llamada cierra el archivo (`tsvinf.closed == True`) y retorna `[]`. | APROBADO |
-| **UT-FE-003** | `FE.get_next_vector()` (`limit`) | Archivo `.tsv` con 5 paquetes y parámetro `limit=2` | Procesa exactamente 2 paquetes y retorna `[]` en la 3ª llamada. | APROBADO |
-| **UT-FE-004** | `FE.get_next_vector()` (Modo Scapy) | Archivo `.pcap` de 5 paquetes (TCP, UDP, ARP, ICMP, L2) con `_get_tshark_path` mockeado a `""` | Activa `parse_type == "scapy"`, procesa los 5 paquetes generando vectores `(100,)` y retorna `[]` al finalizar. | APROBADO |
+| **UT-FE-001** | `FE.__init__()`, `__prep__()`, `get_next_vector()` (TSV) | Ruta inexistente, extensión `.txt`, `.tsv` de 6 protocolos y truncamiento con `limit=2`. | Lanza `Exception` en entradas inválidas; extrae 6 vectores `(100,)` cerrando `tsvinf`; trunca exactamente a 2 vectores con `limit=2`. | APROBADO |
+| **UT-FE-002** | `FE.get_next_vector()` (Scapy `.pcap`) | Archivo `.pcap` con 5 tramas (TCP, UDP, ARP, ICMP, L2 Ether) con `_get_tshark_path` mockeado a `""`. | Selecciona `parse_type == "scapy"`, extrae 5 vectores `(100,)` válidos y retorna `[]` al finalizar. | APROBADO |
 
 ---
 
@@ -332,8 +306,7 @@ A continuación se documenta de forma individual y exhaustiva cada uno de los **
 
 | ID Caso | Función / Método | Entrada de Prueba | Resultado Esperado / Criterio de Aceptación | Estado |
 | :--- | :--- | :--- | :--- | :--- |
-| **UT-KIT-001** | `Kitsune.__init__()` | Archivo `.tsv`, `limit=10, max_autoencoder_size=8, FM_grace_period=5, AD_grace_period=10` | Inicializa `FE` con `100` características y configura `AnomDetector` con `n=100, m=8, FM_grace=5, AD_grace=10`. | APROBADO |
-| **UT-KIT-002** | `Kitsune.proc_next_packet()` | Secuencia de 15 paquetes con `FM_grace=4, AD_grace=5` | Primeros 10 paquetes retornan `0.0`; paquetes 11 a 15 retornan `RMSE > 0.0`; llamada 16 retorna el centinela `-1`. | APROBADO |
+| **UT-KIT-001** | `Kitsune.__init__()`, `proc_next_packet()` | Archivo `.tsv` de 15 paquetes con `limit=15, max_autoencoder_size=8, FM_grace=4, AD_grace=5, lr=0.05, hr=0.75`. | Verifica cableado (`FE=100`, `AnomDetector` configurado); primeros 10 paquetes retornan `0.0`, últimos 5 retornan `RMSE > 0.0` y EOF retorna `-1`. | APROBADO |
 
 ---
 
@@ -545,7 +518,7 @@ Dado que el alcance de ejecución activa del proyecto llega hasta las Pruebas Un
 | :--- | :--- | :--- | :--- | :--- |
 | **DP-01** | Entorno Local / Simulación CI (`Python 3.11 / 3.14`) | `numpy 2.5.3`, `scipy 1.18.1`, `scapy 2.8.0`, `cython 3.3.1` verificados sin conflictos. | 0 errores de dependencia | **SATISFACTORIO (SIMULADO)** |
 | **DP-02** | Simulación de Agente NIDS (Micro-traza TSV) | Transición `FM -> AD -> Execute` completada en `0.08 s` para 25 paquetes; centinela `-1` verificado. | Tiempo de arranque $< 1.0\text{ s}$ | **SATISFACTORIO (SIMULADO)** |
-| **DP-03** | Nodo sin `tshark` (Conmutación a `scapy` / `tsv`) | Conmutación limpia verificada en `UT-FE-002` y `UT-FE-004` produciendo vectores de `100` dimensiones. | Sin caída de proceso | **SATISFACTORIO (SIMULADO)** |
+| **DP-03** | Nodo sin `tshark` (Conmutación a `scapy` / `tsv`) | Conmutación limpia verificada en `UT-FE-001` y `UT-FE-002` produciendo vectores de `100` dimensiones. | Sin caída de proceso | **SATISFACTORIO (SIMULADO)** |
 | **DP-04** | Evaluación de Memoria de Tablas Hash (`incStatDB`) | Poda de registros caducados verificada mediante `cleanOutOldRecords` y cota `LookupError`. | Incremento RAM $< 50\text{ MB}$ | **SATISFACTORIO (SIMULADO)** |
 | **DP-05** | Compuerta de Calidad Pre-Despliegue (`Quality Gate`) | `15 / 15` pruebas unitarias consolidadas aprobadas; cobertura total de código de **95.19%**. | Cobertura $\ge 85\%$, 0 fallos | **APROBADO (EVIDENCIA REAL)** |
 

@@ -21,9 +21,11 @@
 5. [Ejecución de las 15 Pruebas Unitarias y Cobertura](#ejecución-de-las-15-pruebas-unitarias-y-cobertura)
 6. [Resumen de Cobertura y Matriz de las 15 Pruebas](#resumen-de-cobertura-y-matriz-de-las-15-pruebas)
 7. [Arquitectura del Pipeline CI en GitHub Actions](#arquitectura-del-pipeline-ci-en-github-actions)
-8. [Solución de Problemas Frecuentes](#solución-de-problemas-frecuentes)
-9. [Descripción Científica Original de Kitsune](#descripción-científica-original-de-kitsune)
-10. [Licencia y Citación](#licencia-y-citación)
+8. [Configuración de los Parámetros del Pipeline](#configuración-de-los-parámetros-del-pipeline)
+9. [Guía de Evaluación para el Docente (Prueba de Fallo Intencional)](#guía-de-evaluación-para-el-docente-prueba-de-fallo-intencional)
+10. [Solución de Problemas Frecuentes](#solución-de-problemas-frecuentes)
+11. [Descripción Científica Original de Kitsune](#descripción-científica-original-de-kitsune)
+12. [Licencia y Citación](#licencia-y-citación)
 
 ---
 
@@ -110,11 +112,7 @@ git clone https://github.com/NativelogXD/repositorio-pipeline-kitsune.git
 cd repositorio-pipeline-kitsune
 ```
 
-*(O si quieres probar directamente la rama del Pull Request antes de fusionarse:)*
-
-```bash
-git checkout feature/implementacion-suite-pruebas-ci
-```
+*(La rama `main` ya contiene la versión consolidada final del aplicativo, las 15 pruebas unitarias, la documentación IEEE 829 y el pipeline CI).*
 
 ### Paso 2: Crear y activar un entorno virtual (`.venv`)
 
@@ -277,6 +275,79 @@ flowchart LR
     B --> C["Stage 2: unit-tests (Matrix Python 3.11, 3.12)\n- 8 Planes Unitarios (15 tests)\n- Cobertura >= 85%\n- Publicación JUnit + Coverage XML"]
     C --> D["Quality Gate Aprobado\n(FIN DEL PIPELINE - SIN CD)"]
 ```
+
+---
+
+## Configuración de los Parámetros del Pipeline
+
+Todos los parámetros que gobiernan el comportamiento del pipeline se configuran de forma declarativa en dos archivos del repositorio:
+
+### 1. Parámetros del Workflow CI ([`.github/workflows/ci-unit-tests.yml`](.github/workflows/ci-unit-tests.yml))
+
+| Parámetro / Clave YAML | Valor Actual | Descripción y Cómo Modificarlo |
+| :--- | :--- | :--- |
+| **`on.push.branches`** | `["master", "main", "develop"]` | Ramas que disparan automáticamente el pipeline al hacer `git push`. Para incluir nuevas ramas (ej. `feature/*`), agrégalas a esta lista. |
+| **`on.pull_request.branches`** | `["master", "main", "develop"]` | Ramas destino que activan la validación obligatoria al abrir o actualizar un Pull Request. |
+| **`on.workflow_dispatch`** | Habilitado | Permite al docente o desarrollador lanzar el pipeline manualmente desde GitHub (`Actions` → `CI - Kitsune Static Analysis & Unit Tests (No Deploy)` → `Run workflow`). |
+| **`permissions.contents`** | `read` | Principio de mínimo privilegio: el token de CI solo tiene permiso de lectura sobre el repositorio (impide escrituras o despliegues no autorizados). |
+| **`jobs.unit-tests.needs`** | `static-validation` | Garantiza ejecución secuencial por etapas: `Stage 2` no inicia si falla la validación estática de `Stage 1`. |
+| **`strategy.matrix.python-version`** | `["3.11", "3.12"]` | Versiones de Python evaluadas en paralelo. Con `fail-fast: false`, una falla en una versión no cancela el diagnóstico de la otra. |
+| **`--cov-fail-under`** | `85` | Umbral mínimo del **Quality Gate** de cobertura de código (%). Si la cobertura global cae debajo de `85%` o falla cualquier prueba unitaria, el pipeline termina en rojo (`exit code 1`). |
+| **`actions/upload-artifact@v4`** | `if: always()` | Publica `coverage.xml` y `junit-unit-results.xml` incluso si alguna prueba falla, facilitando la auditoría de errores. |
+| **`deployment-verification-simulated`** | Comentado (`if: false`) | Etapa 3 (Pruebas de Despliegue / Smoke Tests). Se mantiene comentada por diseño para detener la ejecución activa en las pruebas unitarias. |
+
+### 2. Parámetros de Descubrimiento y Ejecución de Pruebas ([`pytest.ini`](pytest.ini))
+
+| Parámetro | Valor Actual | Función |
+| :--- | :--- | :--- |
+| **`testpaths`** | `tests/unit` | Limita el descubrimiento de pruebas exclusivamente a la suite unitaria. |
+| **`python_files` / `python_classes` / `python_functions`** | `test_*.py` / `Test*` / `test_*` | Convención de nombres para recolectar automáticamente los 8 planes unitarios (`PU-01` a `PU-08`). |
+| **`addopts`** | `-v --tb=short --strict-markers -p no:cacheprovider` | Salida detallada, trazas cortas, validación estricta de marcadores (`@pytest.mark.unit`) y ejecución sin caché residual. |
+
+---
+
+## Guía de Evaluación para el Docente (Prueba de Fallo Intencional)
+
+Siguiendo el protocolo de evaluación del curso, una vez descargado el proyecto y configurado el entorno (Pasos 1 a 3), se puede validar que el pipeline detecta correctamente regresiones provocando un fallo intencional en las pruebas unitarias:
+
+### Opción A: Evaluación y Fallo Intencional en Entorno Local
+
+1. **Verificar la línea base en verde (opcional):**
+   ```bash
+   python -m pytest tests/unit --cov=KitNET --cov=AfterImage --cov=netStat --cov=FeatureExtractor --cov=Kitsune --cov-report=term-missing --cov-fail-under=85
+   ```
+   *(Resultado esperado: `15 passed` y cobertura `95.19%`).*
+
+2. **Introducir un fallo intencional en una prueba unitaria:**
+   Abre el archivo [`tests/unit/test_utils.py`](tests/unit/test_utils.py) (línea 25) y cambia el valor esperado de `expected` por un valor incorrecto:
+   ```python
+   # Línea original (pasa):
+   assert np.isclose(result, expected, rtol=1e-7)
+
+   # Modificación intencional (falla):
+   assert np.isclose(result, 999.0, rtol=1e-7)
+   ```
+   *(Alternativamente, en [`tests/unit/test_kitnet.py`](tests/unit/test_kitnet.py) línea 70, cambiar `assert rmse_score > 0.0` por `assert rmse_score < 0.0`).*
+
+3. **Ejecutar nuevamente el pipeline local (Stage 1 + Stage 2):**
+   ```bash
+   python -m py_compile Kitsune.py FeatureExtractor.py netStat.py AfterImage.py KitNET/__init__.py KitNET/utils.py KitNET/dA.py KitNET/corClust.py KitNET/KitNET.py
+   python -m pytest tests/unit --cov=KitNET --cov=AfterImage --cov=netStat --cov=FeatureExtractor --cov=Kitsune --cov-report=term-missing --cov-fail-under=85
+   ```
+   **Resultado esperado:** `Stage 1` (`py_compile`) pasa sin errores, pero `Stage 2` falla con `AssertionError` (`1 failed, 14 passed`, `exit code 1`), deteniendo el Quality Gate antes de publicar aprobación.
+
+4. **Restaurar el archivo modificado:**
+   ```bash
+   git checkout -- tests/unit/test_utils.py
+   ```
+
+### Opción B: Evaluación y Fallo Intencional en GitHub Actions
+
+1. Realizar un **Fork** del repositorio `https://github.com/NativelogXD/repositorio-pipeline-kitsune` hacia una cuenta propia de GitHub (y habilitar **Actions** en la pestaña *Actions* del fork).
+2. Editar cualquiera de los archivos de prueba en `tests/unit/` (por ejemplo, `tests/unit/test_utils.py` con el cambio mostrado arriba) y hacer `git commit` + `git push` a la rama `main` (o abrir un Pull Request).
+3. En la pestaña **Actions** de GitHub, observar la ejecución automática del workflow `CI - Kitsune Static Analysis & Unit Tests (No Deploy)`:
+   * `Stage 1 - Sintaxis y Auditoria Estatica` finalizará en verde (✅).
+   * `Stage 2 - Pruebas Unitarias (Pytest + Coverage)` en Python `3.11` y `3.12` se detendrá en rojo (❌) en el paso correspondiente al módulo modificado, generando igualmente el artefacto `junit-unit-results.xml` con el detalle de la falla.
 
 ---
 

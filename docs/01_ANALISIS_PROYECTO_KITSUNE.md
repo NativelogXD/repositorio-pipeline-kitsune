@@ -2,7 +2,7 @@
 
 > **Repositorio Analizado:** `https://github.com/ymirsky/Kitsune-py`  
 > **Referencia Científica:** Yisroel Mirsky, Tomer Doitshman, Yuval Elovici, Asaf Shabtai, *"Kitsune: An Ensemble of Autoencoders for Online Network Intrusion Detection"*, NDSS 2018.  
-> **Ubicación Local del Repositorio:** `C:\Users\xiao\Documents\universidad\ing softwqqare 3\repo-kitsune`
+> **Repositorio del Proyecto:** `https://github.com/NativelogXD/repositorio-pipeline-kitsune` (`repositorio-pipeline-kitsune`)
 
 ---
 
