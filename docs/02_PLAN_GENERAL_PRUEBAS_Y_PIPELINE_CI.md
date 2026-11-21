@@ -23,7 +23,7 @@ flowchart TD
     subgraph ActiveCI["ALCANCE OPERATIVO ACTIVO EN PIPELINE CI (.github/workflows/ci-unit-tests.yml)"]
         S0["Commit / Pull Request\n(Ramas: master, main, develop)"] --> S1
         S1["ETAPA 1: Validación Estática y Sintáctica\n- Compilación Bytecode (py_compile)\n- Verificación de Importabilidad y Tipos\n- Auditoría de Dependencias Científica/Red"]
-        S1 --> S2["ETAPA 2: Pruebas Unitarias Aisladas (Pytest)\n- 8 Planes Específicos (PU-01 a PU-08)\n- 42 Casos de Prueba Deterministas\n- Cobertura Global >= 85% (Actual: 93%+)"]
+        S1 --> S2["ETAPA 2: Pruebas Unitarias Aisladas (Pytest)\n- 8 Planes Específicos (PU-01 a PU-08)\n- 15 Casos de Prueba Deterministas\n- Cobertura Global >= 85% (Actual: 95.19%)"]
         S2 --> GATE{"Quality Gate Unitario\n¿100% Passed & Cov >= 85%?"}
         GATE -->|"Sí"| ART["Publicación de Evidencia CI\n(coverage.xml + junit-unit-results.xml)\nFIN DEL PIPELINE (SIN DESPLIEGUE)"]
         GATE -->|"No"| FAIL["Rechazo del Build / Bloqueo de PR"]
@@ -65,7 +65,7 @@ flowchart TD
   6. **`PU-06` (`netStat.py`):** Inicialización de las 4 tablas hash (`HT_MI`, `HT_H`, `HT_jit`, `HT_Hp`), resolución de dirección/subred (`findDirection`), vector de 100 características (`updateGetStats`) y encabezados (`getNetStatHeaders`).
   7. **`PU-07` (`FeatureExtractor.py`):** Validación de archivos inexistentes/extensiones inválidas, parseo TSV de las 6 ramas de protocolo (IPv4/TCP, IPv4/UDP, IPv6/TCP, ARP, ICMP, L2 MAC), truncamiento por `limit` y fallback a `Scapy`.
   8. **`PU-08` (`Kitsune.py`):** Orquestación en `proc_next_packet()`, retorno de `0.0` en periodos de gracia, retorno de $\text{RMSE} > 0$ en ejecución y centinela `-1` en fin de archivo (EOF).
-* **Criterio de Salida (Quality Gate Final del Pipeline):** 100% de los casos unitarios aprobados (`0 failed`) y cobertura de líneas global $\ge 85\%$ (actualmente **>93%**).
+* **Criterio de Salida (Quality Gate Final del Pipeline):** 100% de los 15 casos unitarios aprobados (`0 failed`) y cobertura de líneas global $\ge 85\%$ (actualmente **95.19%**).
 
 ---
 
@@ -119,7 +119,7 @@ El archivo de definición del pipeline se encuentra en [`.github/workflows/ci-un
 | **`unit-tests`** | `Stage 2 - Pruebas Unitarias (Pytest + Coverage)` | `static-validation` | `ubuntu-latest` Matriz Python `["3.11", "3.12"]` | 1. **Checkout & Setup Python Matrix**: Prepara el entorno aislado por versión.<br>2. **Ejecución Secuencial de los 8 Planes Unitarios**:<br>   - `pytest tests/unit/test_utils.py` (`PU-01`)<br>   - `pytest tests/unit/test_da.py` (`PU-02`)<br>   - `pytest tests/unit/test_corclust.py` (`PU-03`)<br>   - `pytest tests/unit/test_kitnet.py` (`PU-04`)<br>   - `pytest tests/unit/test_afterimage.py` (`PU-05`)<br>   - `pytest tests/unit/test_netstat.py` (`PU-06`)<br>   - `pytest tests/unit/test_feature_extractor.py` (`PU-07`)<br>   - `pytest tests/unit/test_kitsune.py` (`PU-08`)<br>3. **Suite Completa + Gate de Cobertura (`--cov-fail-under=85`)**: Genera `coverage.xml` y `junit-unit-results.xml`.<br>4. **Upload Evidence (`actions/upload-artifact@v4`)**: Almacena los reportes XML como evidencia de auditoría y **finaliza el pipeline sin despliegue**. |
 
 ### 4.3. Ejecución Local Equivalente al Pipeline CI
-Para reproducir exactamente las dos etapas del pipeline en el entorno local (`C:\Users\xiao\Documents\universidad\ing softwqqare 3\repo-kitsune`):
+Para reproducir exactamente las dos etapas del pipeline en el entorno local (`repositorio-pipeline-kitsune`):
 
 ```powershell
 # Etapa 1: Verificación sintáctica e importabilidad

@@ -5,7 +5,7 @@
 **Repositorio local intervenido:** `C:\Users\xiao\Documents\universidad\ing softwqqare 3\repo-kitsune`  
 **Asignatura:** Ingeniería de Software III  
 **Estándares aplicados:** IEEE 829 / ISO/IEC/IEEE 29119 (Documentación de Pruebas de Software)  
-**Alcance de ejecución activa:** Funcional y verificado hasta la etapa de Pruebas Unitarias (42 casos unitarios aprobados, 95.19% de cobertura de código), con etapa de Pruebas de Despliegue documentada y simulada en el pipeline.
+**Alcance de ejecución activa:** Funcional y verificado hasta la etapa de Pruebas Unitarias (15 casos unitarios consolidados aprobados, 95.19% de cobertura de código), con etapa de Pruebas de Despliegue documentada y simulada en el pipeline.
 
 ---
 
@@ -135,7 +135,7 @@ El flujo completo de aseguramiento de calidad en el ciclo CI/CD sigue la siguien
 | :--- | :--- | :--- | :--- |
 | **Fase 0: Control de Versiones** | `git push` / `pull_request` sobre `master`, `main`, `develop` | Registro atómico de cambios y activación automática del orquestador de GitHub Actions. | **ACTIVO** |
 | **Etapa 1: Validación Estática y Sintáctica** | Inicio del workflow CI | Compilación de bytecode (`py_compile`), verificación de AST y validación de importabilidad determinista de los 9 módulos Python. | **ACTIVO (Job 1)** |
-| **Etapa 2: Pruebas Unitarias y Cobertura** | Aprobación de Etapa 1 (`needs: static-validation`) | Ejecución aislada de los 8 Planes Unitarios (`PU-01` a `PU-08`, 42 casos de prueba) y verificación del umbral de cobertura $\ge 85\%$. | **ACTIVO (Job 2 - Corte Funcional)** |
+| **Etapa 2: Pruebas Unitarias y Cobertura** | Aprobación de Etapa 1 (`needs: static-validation`) | Ejecución aislada de los 8 Planes Unitarios (`PU-01` a `PU-08`, 15 casos de prueba consolidados) y verificación del umbral de cobertura $\ge 85\%$. | **ACTIVO (Job 2 - Corte Funcional)** |
 | **Etapa 3: Pruebas de Integración** | Post-Unitarias (Ciclo Extendido) | Verificación de contratos de datos entre `FE <-> netStat <-> AfterImage` y `corClust <-> KitNET <-> dA`. | **DOCUMENTADO** |
 | **Etapa 4: Pruebas de Sistema y Regresión ML** | Post-Integración (Ciclo Extendido) | Evaluación extremo a extremo sobre tráfico de botnet (`mirai.pcap`) y ajuste de umbral log-normal de anomalías. | **DOCUMENTADO** |
 | **Etapa 5: Pruebas No Funcionales (RAM y CPU)** | Pre-Release (Ciclo Extendido) | Verificación de invariante espacial $O(1)$ en streaming, throughput (paquetes/seg) y poda de tablas hash. | **DOCUMENTADO** |
@@ -152,7 +152,7 @@ El flujo completo de aseguramiento de calidad en el ciclo CI/CD sigue la siguien
 
 - **Objetivo:** Verificar matemáticamente y en completo aislamiento cada función, método y transición de estado de los 8 módulos que integran Kitsune.
 - **Mecanismo de Aislamiento:** Uso de generadores pseudoaleatorios con semilla explícita (`seed=42` y `RandomState(1234)`), creación de capturas `.tsv` y `.pcap` sintéticas efímeras en directorios temporales (`tmp_path`) y sustitución (`monkeypatch`) de llamadas al ejecutable externo `tshark`.
-- **Criterio de Aceptación (Quality Gate):** 100% de los 42 casos de prueba unitarios aprobados (`0 failed`) y cobertura global de código $\ge 85\%$ (alcanzando **95.19%** en la ejecución verificada). Una vez superada esta compuerta, el pipeline publica los reportes `coverage.xml` y `junit-unit-results.xml` y **finaliza su ejecución activa**.
+- **Criterio de Aceptación (Quality Gate):** 100% de los 15 casos de prueba unitarios aprobados (`0 failed`) y cobertura global de código $\ge 85\%$ (alcanzando **95.19%** en la ejecución verificada). Una vez superada esta compuerta, el pipeline publica los reportes `coverage.xml` y `junit-unit-results.xml` y **finaliza su ejecución activa**.
 
 ### 2.5. Etapa 3: Pruebas de Integración de Subsistemas (Documentada)
 
@@ -341,15 +341,15 @@ A continuación se documenta de forma individual y exhaustiva cada uno de los **
 
 | Plan Unitario | Módulo Bajo Prueba | Suite de Pruebas | Sentencias Totales | Sentencias Cubiertas | Casos Ejecutados | Cobertura |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **PU-01** | `KitNET/utils.py` | `tests/unit/test_utils.py` | 35 | 35 | 9 / 9 PASS | **100%** |
-| **PU-02** | `KitNET/dA.py` | `tests/unit/test_da.py` | 65 | 65 | 6 / 6 PASS | **100%** |
-| **PU-03** | `KitNET/corClust.py` | `tests/unit/test_corclust.py` | 37 | 37 | 5 / 5 PASS | **100%** |
-| **PU-04** | `KitNET/KitNET.py` | `tests/unit/test_kitnet.py` | 61 | 61 | 4 / 4 PASS | **100%** |
-| **PU-05** | `AfterImage.py` | `tests/unit/test_afterimage.py` | 291 | 284 | 8 / 8 PASS | **98%** |
-| **PU-06** | `netStat.py` | `tests/unit/test_netstat.py` | 59 | 59 | 4 / 4 PASS | **100%** |
-| **PU-07** | `FeatureExtractor.py` | `tests/unit/test_feature_extractor.py` | 167 | 139 | 4 / 4 PASS | **83%** |
-| **PU-08** | `Kitsune.py` | `tests/unit/test_kitsune.py` | 11 | 11 | 2 / 2 PASS | **100%** |
-| **TOTAL GLOBAL** | **8 Módulos (+ `__init__.py`)** | **8 Suites Unitarias** | **727** | **692** | **42 / 42 PASS** | **95.19%** |
+| **PU-01** | `KitNET/utils.py` | `tests/unit/test_utils.py` | 35 | 35 | 2 / 2 PASS | **100%** |
+| **PU-02** | `KitNET/dA.py` | `tests/unit/test_da.py` | 65 | 65 | 2 / 2 PASS | **100%** |
+| **PU-03** | `KitNET/corClust.py` | `tests/unit/test_corclust.py` | 37 | 37 | 2 / 2 PASS | **100%** |
+| **PU-04** | `KitNET/KitNET.py` | `tests/unit/test_kitnet.py` | 61 | 61 | 2 / 2 PASS | **100%** |
+| **PU-05** | `AfterImage.py` | `tests/unit/test_afterimage.py` | 291 | 284 | 2 / 2 PASS | **98%** |
+| **PU-06** | `netStat.py` | `tests/unit/test_netstat.py` | 59 | 59 | 2 / 2 PASS | **100%** |
+| **PU-07** | `FeatureExtractor.py` | `tests/unit/test_feature_extractor.py` | 167 | 139 | 2 / 2 PASS | **83%** |
+| **PU-08** | `Kitsune.py` | `tests/unit/test_kitsune.py` | 11 | 11 | 1 / 1 PASS | **100%** |
+| **TOTAL GLOBAL** | **8 Módulos (+ `__init__.py`)** | **8 Suites Unitarias** | **727** | **692** | **15 / 15 PASS** | **95.19%** |
 
 ---
 
@@ -547,13 +547,13 @@ Dado que el alcance de ejecución activa del proyecto llega hasta las Pruebas Un
 | **DP-02** | Simulación de Agente NIDS (Micro-traza TSV) | Transición `FM -> AD -> Execute` completada en `0.08 s` para 25 paquetes; centinela `-1` verificado. | Tiempo de arranque $< 1.0\text{ s}$ | **SATISFACTORIO (SIMULADO)** |
 | **DP-03** | Nodo sin `tshark` (Conmutación a `scapy` / `tsv`) | Conmutación limpia verificada en `UT-FE-002` y `UT-FE-004` produciendo vectores de `100` dimensiones. | Sin caída de proceso | **SATISFACTORIO (SIMULADO)** |
 | **DP-04** | Evaluación de Memoria de Tablas Hash (`incStatDB`) | Poda de registros caducados verificada mediante `cleanOutOldRecords` y cota `LookupError`. | Incremento RAM $< 50\text{ MB}$ | **SATISFACTORIO (SIMULADO)** |
-| **DP-05** | Compuerta de Calidad Pre-Despliegue (`Quality Gate`) | `42 / 42` pruebas unitarias aprobadas en `4.34 s`; cobertura total de código de **95.19%**. | Cobertura $\ge 85\%$, 0 fallos | **APROBADO (EVIDENCIA REAL)** |
+| **DP-05** | Compuerta de Calidad Pre-Despliegue (`Quality Gate`) | `15 / 15` pruebas unitarias consolidadas aprobadas; cobertura total de código de **95.19%**. | Cobertura $\ge 85\%$, 0 fallos | **APROBADO (EVIDENCIA REAL)** |
 
 ---
 
 ## 6. Conclusiones Técnicas
 
 1. **Comprensión y Saneamiento Arquitectónico:** El análisis detallado de `Kitsune-py` permitió documentar formalmente su arquitectura en cuatro capas (`FE`, `netStat/AfterImage`, `corClust` y `KitNET/dA`), demostrar por qué el vector real extraído en el código consta de $n = 100$ características y corregir defectos latentes de compatibilidad con versiones modernas de Python y NumPy (`np.inf`, `np.nan` en consultas vacías, validación vectorial de `Lambdas` y poda en `cleanOutOldRecords`).
-2. **Cobertura Rigurosa de Pruebas Unitarias:** Se diseñaron, documentaron e implementaron 8 planes de pruebas unitarias específicos (`PU-01` a `PU-08`) compuestos por 42 casos de prueba deterministas que alcanzan un **95.19% de cobertura total**, logrando el **100% de cobertura** en los módulos `KitNET/utils.py`, `KitNET/dA.py`, `KitNET/corClust.py`, `KitNET/KitNET.py`, `netStat.py` y `Kitsune.py`.
+2. **Cobertura Rigurosa de Pruebas Unitarias:** Se diseñaron, documentaron e implementaron 8 planes de pruebas unitarias específicos (`PU-01` a `PU-08`) compuestos por 15 casos de prueba deterministas consolidados que alcanzan un **95.19% de cobertura total**, logrando el **100% de cobertura** en los módulos `KitNET/utils.py`, `KitNET/dA.py`, `KitNET/corClust.py`, `KitNET/KitNET.py`, `netStat.py` y `Kitsune.py`.
 3. **Gobernanza del Pipeline CI/CD:** Se documentó el ciclo completo de pruebas desde los eventos `push` y `pull_request` hasta las pruebas de despliegue simuladas, garantizando que la ejecución automatizada del workflow `.github/workflows/ci-unit-tests.yml` opere de manera funcional y estricta hasta las Pruebas Unitarias, con la etapa de despliegue comentada y simulada conforme a las especificaciones académicas.
 
